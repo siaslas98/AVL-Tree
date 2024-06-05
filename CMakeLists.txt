@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 14)
 
 # Add source files
 set(SOURCES
-        src/Student.h
         src/AVL.cpp
         src/AVL.h
     )
