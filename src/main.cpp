@@ -3,7 +3,6 @@
 #include <regex>
 
 #include "AVL.h"
-#include "Student.h"
 
 using namespace std;
 
@@ -42,6 +41,7 @@ vector<string> splitCommand(const string& command){
         commandArgs.push_back(match.str());
         ++next;
     }
+
     return commandArgs;
 }
 void processCommand(AVL& tree, const string& command){
@@ -74,5 +74,28 @@ void processCommand(AVL& tree, const string& command){
 
     else if(tokens[0] == "printInorder"){
         tree.printTreeInOrder();
+        cout << '\n';
     }
+
+    else if(tokens[0] == "search"){
+        if(tokens.size() != 2){
+            cerr << "Invalid search command\n";
+            return;
+        }
+
+        string str = tokens[1];
+        if(tree.testIsValidID(str) && tree.searchID(tree.getRoot(), str)){ // We search for ID
+            cout << "successful\n";
+        }
+
+        else if(tree.testIsValidName(str) && tree.searchName(tree.getRoot(), str)){
+            cout << "successful\n";
+        }
+
+        else{
+            cerr << "unsuccessful\n";
+        }
+
+    }
+
 }

@@ -19,9 +19,7 @@ bool AVL::isValidName(const string& name) {
 }
 
 int AVL::getBalance(Node* N) {
-    if(N == nullptr){
-        return 0;
-    }
+    if(!N) return 0;
     return getHeight(N->_left) - getHeight(N->_right);
 }
 
@@ -185,12 +183,47 @@ void AVL::printTreeInOrder() {
 }
 
 int AVL::getHeight(Node* N) {
-    if(N == nullptr){
-        return 0;
+   return N ? N->_height : 0;
+}
+
+Node* AVL::getRoot() const{
+    if(!_root){
+        return nullptr;
     }
-    return N->_height;
+    return _root;
 }
 
 int AVL::max(int a, int b) {
     return (a > b) ? a : b;
+}
+
+bool AVL::searchID(Node* root, string id){
+    if(!root){
+        return false;
+    }
+
+    if(root->_student._id == id){
+        cout << root->_student._name << endl;
+        return true;
+    }
+
+    return searchID(root->_left, id) || searchID(root->_right, id);
+}
+
+bool AVL::searchName(Node* root, string name){
+    if(!root){
+        return false;
+    }
+
+    bool found = false;
+
+    if(root->_student._name == name){
+        cout << root->_student._id << endl;
+        found = true;
+    }
+
+    found = searchName(root->_left, name) || found;
+    found = searchName(root->_right, name) || found;
+
+    return found;
 }
