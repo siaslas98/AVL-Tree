@@ -48,9 +48,13 @@ private:
     int getBalance(Node* N);
     Node* leftRotate(Node* root);
     Node* rightRotate(Node* root);
+    Node* getIoSuccessor(Node* root);
     Node* insert(Node* root, const Student& student);
+    Node* remove(Node* root, string id, bool& removed);
     bool contains(string id);
     void printInOrder(Node* root, stringstream& ss);
+    void printPreOrder(Node* root, stringstream& ss);
+    void printPostOrder(Node* root, stringstream& ss);
 
     bool isValidID(const string& id);
     bool isValidName(const string& name);
@@ -61,6 +65,7 @@ public:
 
     // Mutators
     bool insertStudent(const Student& student);
+    bool removeStudent(string id);
 
     // Searching
     bool searchID(Node* root, string id);
@@ -68,6 +73,9 @@ public:
 
     // Display
     void printTreeInOrder();
+    void printTreePreOrder();
+    void printTreePostOrder();
+    void printLevelCount();
 
     // Public test interface
     bool testIsValidName(string name){
@@ -88,7 +96,6 @@ public:
             return true;
         } // An empty tree is always balanced
         int balance = getBalance(root);
-        DEBUG_PRINT("Checking balance for node with ID: " + root->_student._id + ", balance factor: " + to_string(balance));
         bool leftBalanced = isBalanced(root->_left);
         bool rightBalanced = isBalanced(root->_right);
         return balance >= -1 && balance <= 1 && leftBalanced && rightBalanced;
@@ -99,13 +106,21 @@ public:
         } // An empty tree has a height of 0
         int leftHeight = getHeight(root->_left);
         int rightHeight = getHeight(root->_right);
-        DEBUG_PRINT("Checking height for node with ID: " + root->_student._id + ", height: " + to_string(root->_height) + ", expected height: " + to_string(1 + max(leftHeight, rightHeight)));
         bool leftHeightCorrect = isHeightCorrect(root->_left);
         bool rightHeightCorrect = isHeightCorrect(root->_right);
         return root->_height == 1 + max(leftHeight, rightHeight) && leftHeightCorrect && rightHeightCorrect;
     }
     bool validateTree(){
         return isBalanced(_root) && isHeightCorrect(_root);
+    }
+    void testPrintInOrder(stringstream& ss){
+        printInOrder(_root, ss);
+    }
+    void testPrintPreOrder(stringstream& ss){
+        printPreOrder(_root, ss);
+    }
+    void testPrintPostOrder(stringstream& ss){
+        printPostOrder(_root, ss);
     }
 
     // Helpers

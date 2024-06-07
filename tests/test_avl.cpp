@@ -2,6 +2,65 @@
 #include <catch2/catch.hpp>
 #include "../src/AVL.h"
 
+TEST_CASE("Basic AVL Tree Operations") {
+    AVL tree;
+
+    SECTION("Insert and Search Nodes") {
+        Student s1("Brandon", "45679999");
+        Student s2("Brian", "35459999");
+        Student s3("Briana", "87879999");
+        Student s4("Bella", "95469999");
+        Student s5("Ben","00000000");
+
+        REQUIRE(tree.insertStudent(s1) == true);
+        REQUIRE(tree.insertStudent(s2) == true);
+        REQUIRE(tree.insertStudent(s3) == true);
+        REQUIRE(tree.insertStudent(s4) == true);
+        REQUIRE(tree.insertStudent(s5) == true);
+
+        REQUIRE(tree.testContains("45679999") == true);
+        REQUIRE(tree.testContains("35459999") == true);
+        REQUIRE(tree.testContains("87879999") == true);
+        REQUIRE(tree.testContains("95469999") == true);
+        REQUIRE(tree.testContains("00000000") == true);
+        REQUIRE(tree.testContains("954699999") == false);
+    }
+
+    SECTION("Avoid Inserting Duplicates") {
+        Student s1("Alice", "10000001"); // Use a valid 8-digit ID
+        REQUIRE(tree.insertStudent(s1) == true);
+        REQUIRE(tree.insertStudent(s1) == false);
+    }
+
+    SECTION("Print in order") {
+        Student s1("Brandon", "45679999");
+        Student s2("Brian", "35459999");
+        Student s3("Briana", "87879999");
+        Student s4("Bella", "95469999");
+        Student s5("Bella", "95469999");
+        Student s6("Ben","00000000");
+
+        tree.insertStudent(s1);
+        tree.insertStudent(s2);
+        tree.insertStudent(s3);
+        tree.insertStudent(s4);
+        tree.insertStudent(s5);
+        tree.insertStudent(s6);
+
+        stringstream buffer;
+        streambuf* old = cout.rdbuf(buffer.rdbuf());
+
+        tree.printTreeInOrder();
+
+        cout.rdbuf(old);
+        string output = buffer.str();
+
+        // Debug output: Print the captured output to the console
+        cout << "Captured output: " << output << endl;
+
+        REQUIRE(output == "Ben, Brian, Brandon, Briana, Bella");
+    }
+}
 TEST_CASE("Input Validation"){
     AVL tree;
 
@@ -83,7 +142,6 @@ TEST_CASE("Insertion"){
         REQUIRE(tree.getRoot()->_left->_student._id == "1");
         REQUIRE(tree.getRoot()->_right->_student._id == "3");
 
-        cout << "Validating tree balance and height..." << endl;
         REQUIRE(tree.validateTree() == true);
     }
 
@@ -159,63 +217,219 @@ TEST_CASE("Insertion"){
         REQUIRE(tree.validateTree() == true);
     }
 }
-TEST_CASE("Basic AVL Tree Operations") {
+TEST_CASE("Remove Node Given ID"){
     AVL tree;
 
-    SECTION("Insert and Search Nodes") {
-        Student s1("Brandon", "45679999");
-        Student s2("Brian", "35459999");
-        Student s3("Briana", "87879999");
-        Student s4("Bella", "95469999");
-        Student s5("Ben","00000000");
+    SECTION("Remove Leaf Node"){
+        Student student1("Alice", "1");
+        Student student2("Bob", "2");
+        Student student3("Charlie", "3");
 
-        REQUIRE(tree.insertStudent(s1) == true);
-        REQUIRE(tree.insertStudent(s2) == true);
-        REQUIRE(tree.insertStudent(s3) == true);
-        REQUIRE(tree.insertStudent(s4) == true);
-        REQUIRE(tree.insertStudent(s5) == true);
+        tree.testInsert(student1);
+        tree.testInsert(student2);
+        tree.testInsert(student3);
 
-        REQUIRE(tree.testContains("45679999") == true);
-        REQUIRE(tree.testContains("35459999") == true);
-        REQUIRE(tree.testContains("87879999") == true);
-        REQUIRE(tree.testContains("95469999") == true);
-        REQUIRE(tree.testContains("00000000") == true);
-        REQUIRE(tree.testContains("954699999") == false);
+        REQUIRE(tree.removeStudent("3") == true);
+
+        REQUIRE(tree.getRoot() != nullptr);
+        REQUIRE(tree.getRoot()->_student._id == "2");
+        REQUIRE(tree.getRoot()->_left->_student._id == "1");
+        REQUIRE(tree.getRoot()->_right == nullptr);
+        REQUIRE(tree.validateTree() == true);
     }
 
-    SECTION("Avoid Inserting Duplicates") {
-        Student s1("Alice", "10000001"); // Use a valid 8-digit ID
-        REQUIRE(tree.insertStudent(s1) == true);
-        REQUIRE(tree.insertStudent(s1) == false);
+    SECTION("Remove Node with One Child") {
+        Student student1("Alice", "1");
+        Student student2("Bob", "2");
+        Student student3("Charlie", "3");
+        Student student4("David", "4");
+
+        tree.testInsert(student1);
+        tree.testInsert(student2);
+        tree.testInsert(student3);
+        tree.testInsert(student4);
+
+        REQUIRE(tree.removeStudent("3") == true);
+
+        REQUIRE(tree.getRoot() != nullptr);
+        REQUIRE(tree.getRoot()->_student._id == "2");
+        REQUIRE(tree.getRoot()->_left->_student._id == "1");
+        REQUIRE(tree.getRoot()->_right->_student._id == "4");
+        REQUIRE(tree.validateTree() == true);
     }
 
-    SECTION("Print in order") {
-        Student s1("Brandon", "45679999");
-        Student s2("Brian", "35459999");
-        Student s3("Briana", "87879999");
-        Student s4("Bella", "95469999");
-        Student s5("Bella", "95469999");
-        Student s6("Ben","00000000");
+    SECTION("Remove Node with Two Children") {
+        Student student1("Alice", "1");
+        Student student2("Bob", "2");
+        Student student3("Charlie", "3");
+        Student student4("David", "0");
+        Student student5("Eve", "5");
 
-        tree.insertStudent(s1);
-        tree.insertStudent(s2);
-        tree.insertStudent(s3);
-        tree.insertStudent(s4);
-        tree.insertStudent(s5);
-        tree.insertStudent(s6);
+        tree.testInsert(student1);
+        tree.testInsert(student2);
+        tree.testInsert(student3);
+        tree.testInsert(student4);
+        tree.testInsert(student5);
 
-        stringstream buffer;
-        streambuf* old = cout.rdbuf(buffer.rdbuf());
+        REQUIRE(tree.removeStudent("2") == true);
 
-        tree.printTreeInOrder();
+        REQUIRE(tree.getRoot() != nullptr);
+        REQUIRE(tree.getRoot()->_student._id == "3");
+        REQUIRE(tree.getRoot()->_left->_student._id == "1");
+        REQUIRE(tree.getRoot()->_left->_left->_student._id == "0");
+        REQUIRE(tree.getRoot()->_right->_student._id == "5");
+        REQUIRE(tree.validateTree() == true);
+    }
 
-        cout.rdbuf(old);
-        string output = buffer.str();
+    SECTION("Complex Removal Sequence") {
+        Student students[] = {
+                {"Sybil", "10"}, {"Mallory", "11"}, {"Frank", "15"},
+                {"Niaj", "17"}, {"Ivan", "2"}, {"Alice", "20"},
+                {"Grace", "21"}
+        };
 
-        // Debug output: Print the captured output to the console
-        cout << "Captured output: " << output << endl;
+        for (const auto& student : students) {
+            tree.testInsert(student);
+            REQUIRE(tree.validateTree() == true);
+        }
 
-        REQUIRE(output == "Ben, Brian, Brandon, Briana, Bella");
+        // Remove some nodes and validate after each removal
+        REQUIRE(tree.getRoot()->_student._id == "17");
+        REQUIRE(tree.removeStudent("17") == true);
+        REQUIRE(tree.validateTree() == true);
+
+        REQUIRE(tree.getRoot()->_student._id == "2");
+        REQUIRE(tree.removeStudent("2") == true);
+        REQUIRE(tree.validateTree() == true);
+
+        REQUIRE(tree.getRoot()->_student._id == "20");
+        REQUIRE(tree.removeStudent("20") == true);
+        REQUIRE(tree.validateTree() == true);
+
+        REQUIRE(tree.getRoot()->_student._id == "11");
+        REQUIRE(tree.removeStudent("11") == true);
+        REQUIRE(tree.validateTree() == true);
+
+        REQUIRE(tree.getRoot()->_student._id == "15");
+        REQUIRE(tree.removeStudent("15") == true);
+        REQUIRE(tree.validateTree() == true);
+
+        REQUIRE(tree.getRoot()->_student._id == "21");
+        REQUIRE(tree.removeStudent("21") == true);
+        REQUIRE(tree.validateTree() == true);
+
+        REQUIRE(tree.getRoot()->_student._id == "10");
+        REQUIRE(tree.removeStudent("10") == true);
+        REQUIRE(tree.validateTree() == true);
+    }
+}
+TEST_CASE("Remove Nth Node"){}
+TEST_CASE("Printing"){
+    AVL tree;
+
+    /********** Testing Inorder Printing **********/
+    SECTION("Empty Tree") {
+        stringstream ss;
+        tree.testPrintInOrder(ss);
+        REQUIRE(ss.str().empty());
+    }
+
+    SECTION("Single Node Tree") {
+        Student student("Kyrie Irving", "66666666");
+        tree.insertStudent(student);
+        stringstream ss;
+        tree.testPrintInOrder(ss);
+        REQUIRE(ss.str() == "Kyrie Irving");
+    }
+
+    SECTION("3 Nodes Tree") {
+        tree.insertStudent(Student("LeBron James", "12345678"));
+        tree.insertStudent(Student("Stephen Curry", "23456789"));
+        tree.insertStudent(Student("Kevin Durant", "34567890"));
+        stringstream ss;
+        tree.testPrintInOrder(ss);
+        REQUIRE(ss.str() == "LeBron James, Stephen Curry, Kevin Durant");
+    }
+
+    SECTION("5 Nodes Tree") {
+        tree.insertStudent(Student("LeBron James", "12345678"));
+        tree.insertStudent(Student("Stephen Curry", "23456789"));
+        tree.insertStudent(Student("Kevin Durant", "34567890"));
+        tree.insertStudent(Student("Anthony Davis", "45678901"));
+        tree.insertStudent(Student("James Harden", "56789012"));
+        stringstream ss;
+        tree.testPrintInOrder(ss);
+        REQUIRE(ss.str() == "LeBron James, Stephen Curry, Kevin Durant, Anthony Davis, James Harden");
+    }
+
+    /********** Testing Preorder Printing **********/
+    SECTION("Empty Tree") {
+        stringstream ss;
+        tree.testPrintPreOrder(ss);
+        REQUIRE(ss.str().empty());
+    }
+
+    SECTION("Single Node Tree") {
+        Student student("Kyrie Irving", "66666666");
+        tree.insertStudent(student);
+        stringstream ss;
+        tree.testPrintPreOrder(ss);
+        REQUIRE(ss.str() == "Kyrie Irving");
+    }
+
+    SECTION("3 Nodes Tree") {
+        tree.insertStudent(Student("LeBron James", "12345678"));
+        tree.insertStudent(Student("Stephen Curry", "23456789"));
+        tree.insertStudent(Student("Kevin Durant", "34567890"));
+        stringstream ss;
+        tree.testPrintPreOrder(ss);
+        REQUIRE(ss.str() == "Stephen Curry, LeBron James, Kevin Durant");
+    }
+
+    SECTION("5 Nodes Tree") {
+        tree.insertStudent(Student("LeBron James", "12345678"));
+        tree.insertStudent(Student("Stephen Curry", "23456789"));
+        tree.insertStudent(Student("Kevin Durant", "34567890"));
+        tree.insertStudent(Student("Anthony Davis", "45678901"));
+        tree.insertStudent(Student("James Harden", "56789012"));
+        stringstream ss;
+        tree.testPrintPreOrder(ss);
+        REQUIRE(ss.str() == "Stephen Curry, LeBron James, Anthony Davis, Kevin Durant, James Harden");
+    }
+
+    /********** Testing Postorder Printing **********/
+    SECTION("Empty Tree") {
+        stringstream ss;
+        tree.testPrintPostOrder(ss);
+        REQUIRE(ss.str().empty());
+    }
+
+    SECTION("Single Node Tree") {
+        Student student("Kyrie Irving", "66666666");
+        tree.insertStudent(student);
+        stringstream ss;
+        tree.testPrintPostOrder(ss);
+        REQUIRE(ss.str() == "Kyrie Irving");
+    }
+
+    SECTION("3 Nodes Tree") {
+        tree.insertStudent(Student("LeBron James", "12345678"));
+        tree.insertStudent(Student("Stephen Curry", "23456789"));
+        tree.insertStudent(Student("Kevin Durant", "34567890"));
+        stringstream ss;
+        tree.testPrintPostOrder(ss);
+        REQUIRE(ss.str() == "LeBron James, Kevin Durant, Stephen Curry");
+    }
+
+    SECTION("5 Nodes Tree") {
+        tree.insertStudent(Student("LeBron James", "12345678"));
+        tree.insertStudent(Student("Stephen Curry", "23456789"));
+        tree.insertStudent(Student("Kevin Durant", "34567890"));
+        tree.insertStudent(Student("Anthony Davis", "45678901"));
+        tree.insertStudent(Student("James Harden", "56789012"));
+        stringstream ss;
+        tree.testPrintPostOrder(ss);
+        REQUIRE(ss.str() == "LeBron James, Kevin Durant, James Harden, Anthony Davis, Stephen Curry");
     }
 }
 

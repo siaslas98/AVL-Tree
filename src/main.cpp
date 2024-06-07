@@ -72,9 +72,35 @@ void processCommand(AVL& tree, const string& command){
         }
     }
 
+    else if(tokens[0] == "remove"){
+        string id = tokens[1];
+        if(tree.removeStudent(id)){
+            cout << "successful\n";
+        }
+
+        else {
+            cerr << "unsuccessful\n";
+        }
+
+    }
+
     else if(tokens[0] == "printInorder"){
         tree.printTreeInOrder();
         cout << '\n';
+    }
+
+    else if(tokens[0] == "printPreorder"){
+        tree.printTreePreOrder();
+        cout << '\n';
+    }
+
+    else if(tokens[0] == "printPostorder"){
+        tree.printTreePostOrder();
+        cout << '\n';
+    }
+
+    else if(tokens[0] == "printLevelCount"){
+        tree.printLevelCount();
     }
 
     else if(tokens[0] == "search"){
@@ -99,3 +125,4 @@ void processCommand(AVL& tree, const string& command){
     }
 
 }
+

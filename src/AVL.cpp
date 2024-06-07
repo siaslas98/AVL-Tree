@@ -35,8 +35,6 @@ Node* AVL::leftRotate(Node* root) {
     root->_height = 1 + max(getHeight(root->_left), getHeight(root->_right));
     newRoot->_height = 1 + max(getHeight(newRoot->_left), getHeight(newRoot->_right));
 
-    DEBUG_PRINT("Left rotation on node with ID: " + root->_student._id);
-
     return newRoot;
 }
 
@@ -52,9 +50,14 @@ Node* AVL::rightRotate(Node* root) {
     root->_height = 1 + max(getHeight(root->_left), getHeight(root->_right));
     newRoot->_height = 1 + max(getHeight(newRoot->_left), getHeight(newRoot->_right));
 
-    DEBUG_PRINT("Right rotation on node with ID: " + root->_student._id);
-
     return newRoot;
+}
+
+Node* AVL::getIoSuccessor(Node* root) {
+   if(!root->_left){
+       return root;
+   }
+   return getIoSuccessor(root->_left);
 }
 
 Node* AVL::insert(Node* root, const Student& student) {
@@ -116,6 +119,82 @@ Node* AVL::insert(Node* root, const Student& student) {
     return root;
 }
 
+Node* AVL::remove(Node* root, string id, bool& removed) {
+    if(!root){
+        return nullptr;
+    }
+
+    if(id < root->_student._id){
+        root->_left = remove(root->_left, id, removed);
+    }
+
+    else if(id > root->_student._id){
+        root->_right = remove(root->_right, id, removed);
+    }
+
+    else{ // Node found
+        removed = true;
+
+        if(!root->_left && !root->_right){ // Simply delete, there are no children
+            delete root;
+            return nullptr;
+        }
+
+        else if(root->_left && !root->_right){ // 1 left child
+            Node* newRoot = root->_left;
+            delete root;
+            return newRoot;
+        }
+
+        else if(!root->_left && root->_right){ // 1 right child
+            Node* newRoot = root->_right;
+            delete root;
+            return newRoot;
+        }
+
+        else{ // 2 children
+            Node* successor = getIoSuccessor(root->_right);
+
+            // Replace root's data with successor's data
+            root->_student = successor->_student;
+
+            // Recursively remove the in-order successor
+            root->_right = remove(root->_right, successor->_student._id, removed);
+        }
+    }
+
+    root->_height = 1 + max(getHeight(root->_left), getHeight(root->_right));
+
+    // Update node heights along the path and perform rotations
+    int balanceFact = getBalance(root);
+
+    // Left heavy
+    if (balanceFact > 1){
+        if(getBalance(root->_left) >= 0){ // Left-Left case - perform right rotation
+            return rightRotate(root);
+        }
+        else{ // Left-Right case - perform double rotation. Left rotation, then right rotation
+            root->_left = leftRotate(root->_left);
+            return rightRotate(root);
+        }
+    }
+
+    // Right heavy
+    if (balanceFact < -1){
+
+        if(getBalance(root->_right) <= 0){ // Right-Right case - perform left rotation
+            return leftRotate(root);
+        }
+
+        else{ // Right-Left case - Right rotation, then left rotation
+            root->_right = rightRotate(root->_right);
+            return leftRotate(root);
+        }
+    }
+
+    return root;
+}
+
 bool AVL::insertStudent(const Student& student) {
     // Validate ID
     if(!isValidID(student._id)){
@@ -135,31 +214,69 @@ bool AVL::insertStudent(const Student& student) {
     return true; // Insertion was successful
 }
 
+bool AVL::removeStudent(string id) {
+    if(!_root){ // We don't have an actual tree, so there is nothing to remove
+        return false;
+    }
+
+    bool removed = false;
+    _root = remove(_root, id, removed);
+    return removed;
+}
+
 void AVL::printInOrder(Node* root, stringstream& ss) {
     if(!root){
         return;
     }
 
-    if(root->_left){
-        printInOrder(root->_left, ss);
+    printInOrder(root->_left, ss);
+
+    if (ss.tellp() > 0) { // Check if the stringstream is not empty
         ss << ", ";
     }
 
     root->printName(ss);
 
-    if(root->_right){
-        ss << ", ";
-        printInOrder(root->_right, ss);
+    printInOrder(root->_right, ss);
+}
+
+void AVL::printPreOrder(Node* root, std::stringstream& ss) {
+    if(!root){
+        return;
     }
+
+    root->printName(ss);
+
+    if (root->_left || root->_right) { // Check if there are children before adding a comma
+        ss << ", ";
+    }
+
+    printPreOrder(root->_left, ss);
+
+    if (root->_right) { // Check if there are children before adding a comma
+        ss << ", ";
+    }
+
+    printPreOrder(root->_right, ss);
+}
+
+void AVL::printPostOrder(Node* root, std::stringstream& ss) {
+    if(!root){
+        return;
+    }
+
+    printPostOrder(root->_left, ss);
+    printPostOrder(root->_right, ss);
+
+    if(ss.tellp() > 0){
+        ss << ", ";
+    }
+
+    root->printName(ss);
 }
 
 void AVL::printTreeInOrder() {
     if(!_root){
-        return;
-    }
-
-    if(_root->_left == nullptr && _root->_right == nullptr){
-        cout << _root->_student._name << endl;
         return;
     }
 
@@ -168,18 +285,42 @@ void AVL::printTreeInOrder() {
 
     string res = ss.str();
 
-    // Remove trailing comma and space if present
-    if (res.size() >= 2 && res.substr(res.size() - 2) == ", ") {
-        res.erase(res.size() - 2);
+    cout << res;
+}
+
+void AVL::printTreePreOrder() {
+    if(!_root){
+        return;
     }
 
-    // Remove trailing newline if present
-    if (!res.empty() && res.back() == '\n') {
-        res.pop_back();
-    }
+    stringstream ss;
+    printPreOrder(_root, ss);
 
+    string res = ss.str();
 
     cout << res;
+}
+
+void AVL::printTreePostOrder(){
+    if(!_root){
+        return;
+    }
+
+    stringstream ss;
+    printPostOrder(_root, ss);
+
+    string res = ss.str();
+
+    cout << res;
+}
+
+void AVL::printLevelCount() {
+    if(_root == nullptr){
+        cout << 0 << endl;
+        return;
+    }
+
+    cout << _root->_height << endl;
 }
 
 int AVL::getHeight(Node* N) {
