@@ -66,10 +66,11 @@ public:
     // Mutators
     bool insertStudent(const Student& student);
     bool removeStudent(string id);
+    bool removeNthStudent(Node* root, int& N);
 
     // Searching
     bool searchID(Node* root, string id);
-    bool searchName(Node* root, string name);
+    void searchName(Node* root, const string& name, vector<string>& v);
 
     // Display
     void printTreeInOrder();

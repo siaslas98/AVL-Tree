@@ -323,7 +323,52 @@ TEST_CASE("Remove Node Given ID"){
         REQUIRE(tree.validateTree() == true);
     }
 }
-TEST_CASE("Remove Nth Node"){}
+TEST_CASE("Remove Nth Node"){
+    AVL tree;
+
+    Student students[] = {
+            {"Sybil", "10"},{"Mallory", "11"},{"Frank", "15"},
+            {"Niaj", "17"}, {"Ivan", "2"}, {"Alice", "20"},
+            {"Grace", "21"}, {"Olivia", "23"}, {"Charlie", "26"},
+            {"David", "3"}, {"Heidi", "30"}, {"Bob", "4"},
+            {"Judy", "7"},{"Peggy", "8"}, {"Eve", "9"}
+    };
+
+    for (const auto& student : students) {
+        tree.testInsert(student);
+        REQUIRE(tree.validateTree() == true);
+    }
+
+    REQUIRE(tree.getRoot()->_student._id == "23");
+
+
+    stringstream ss;
+    tree.testPrintInOrder(ss);
+    cout << "In-order before removals: " << ss.str() << endl;
+
+    // Remove the 5th student (in in-order traversal)
+    int N = 5;
+    REQUIRE(tree.removeNthStudent(tree.getRoot(), N) == true);
+    REQUIRE(tree.validateTree() == true);
+
+    ss.str(""); // Clear the stringstream
+    tree.testPrintInOrder(ss);
+    cout << "In-order after removing 5th student: " << ss.str() << endl;
+
+    // Further tests can be added to remove other Nth students and verify the tree structure
+    ss.str(""); // Clear the stringstream
+    tree.testPrintInOrder(ss);
+    cout << "In-order before removals: " << ss.str() << endl;
+
+    N = 2;
+    REQUIRE(tree.removeNthStudent(tree.getRoot(), N) == true);
+    REQUIRE(tree.validateTree() == true);
+
+    ss.str(""); // Clear the stringstream
+    tree.testPrintInOrder(ss);
+    cout << "In-order after removing 2nd student: " << ss.str() << endl;
+}
+
 TEST_CASE("Printing"){
     AVL tree;
 

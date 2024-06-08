@@ -224,6 +224,32 @@ bool AVL::removeStudent(string id) {
     return removed;
 }
 
+bool AVL::removeNthStudent(Node* root, int& N) {
+    if(!root){
+        return false;
+    }
+
+    if(root->_left){
+        if(removeNthStudent(root->_left, N)){
+            return true;
+        }
+    }
+
+
+    if(N == 0){
+        return removeStudent(root->_student._id);
+    }
+    --N;
+
+    if(root->_right){
+        if(removeNthStudent(root->_right, N)){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void AVL::printInOrder(Node* root, stringstream& ss) {
     if(!root){
         return;
@@ -351,20 +377,16 @@ bool AVL::searchID(Node* root, string id){
     return searchID(root->_left, id) || searchID(root->_right, id);
 }
 
-bool AVL::searchName(Node* root, string name){
+void AVL::searchName(Node* root, const string& name, vector<string>& v){
     if(!root){
-        return false;
+        return;
     }
 
-    bool found = false;
+    searchName(root->_left, name, v);
 
     if(root->_student._name == name){
-        cout << root->_student._id << endl;
-        found = true;
+        v.push_back(root->_student._id);
     }
 
-    found = searchName(root->_left, name) || found;
-    found = searchName(root->_right, name) || found;
-
-    return found;
+    searchName(root->_right, name, v);
 }

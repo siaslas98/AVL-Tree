@@ -84,6 +84,23 @@ void processCommand(AVL& tree, const string& command){
 
     }
 
+    else if(tokens[0] == "removeInorder"){
+        if(tokens.size() < 2 || !all_of(tokens[1].begin(), tokens[1].end(), ::isdigit)){
+            cerr << "unsuccessful\n";
+            return;
+        }
+        else{
+            int N = stoi(tokens[1]);
+            if(tree.removeNthStudent(tree.getRoot(), N)){
+                cout << "successful\n";
+            }
+            else{
+                cerr << "unsuccessful\n";
+            }
+            return;
+        }
+    }
+
     else if(tokens[0] == "printInorder"){
         tree.printTreeInOrder();
         cout << '\n';
@@ -105,24 +122,29 @@ void processCommand(AVL& tree, const string& command){
 
     else if(tokens[0] == "search"){
         if(tokens.size() != 2){
-            cerr << "Invalid search command\n";
             return;
         }
 
         string str = tokens[1];
-        if(tree.testIsValidID(str) && tree.searchID(tree.getRoot(), str)){ // We search for ID
-            cout << "successful\n";
+        string str1 = str;
+        string str2 = str.substr(1, str.size() - 2); // Remove double quotes
+        vector<string> v;
+        if(tree.testIsValidID(str) && tree.searchID(tree.getRoot(), str1)){ // We search for ID
         }
 
-        else if(tree.testIsValidName(str) && tree.searchName(tree.getRoot(), str)){
-            cout << "successful\n";
+
+        else if(tree.testIsValidName(str2)){
+            tree.searchName(tree.getRoot(), str2, v);
+            if(v.size() > 0){
+                for(auto& id : v){
+                    cout << id << endl;
+                }
+            }
         }
 
         else{
-            cerr << "unsuccessful\n";
+            cout << "unsuccessful\n";
         }
 
     }
-
 }
-
