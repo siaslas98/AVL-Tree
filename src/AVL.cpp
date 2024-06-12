@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "AVL.h"
 
 bool AVL::contains(string id) {
@@ -18,13 +19,13 @@ bool AVL::isValidName(const string& name) {
     return regex_match(name, name_regex);
 }
 
-int AVL::getBalance(Node* N) {
-    if(!N) return 0;
-    return getHeight(N->_left) - getHeight(N->_right);
-}
+int AVL::getBalance(Node* node) {
+    if(!node) return 0;
+    return getHeight(node->_left) - getHeight(node->_right);
+} // For balance factor calculations in insertions and deletions
 
 Node* AVL::leftRotate(Node* root) {
-    if (!root || !root->_right) return root; // Defensive check
+    if (!root || !root->_right) return root; // You cannot left rotate at root
 
     Node* newRoot = root->_right;
     Node* leftRight = newRoot->_left;
@@ -39,7 +40,7 @@ Node* AVL::leftRotate(Node* root) {
 }
 
 Node* AVL::rightRotate(Node* root) {
-    if (!root || !root->_left) return root; // Defensive check
+    if (!root || !root->_left) return root; // You cannot rotate right
 
     Node* newRoot = root->_left;
     Node* rightLeft = newRoot->_right;
@@ -58,7 +59,7 @@ Node* AVL::getIoSuccessor(Node* root) {
        return root;
    }
    return getIoSuccessor(root->_left);
-}
+} // This is called on the right subtree of the root of the tree
 
 Node* AVL::insert(Node* root, const Student& student) {
     // Executes when we initialize the AVL, and when we insert a new leaf node
@@ -74,48 +75,39 @@ Node* AVL::insert(Node* root, const Student& student) {
         root->_right = insert(root->_right, student);
     }
 
-    // After we successfully insert a new node and the stack frames return to previous stack frames
+    // After we successfully insert a new leaf node and recursive calls begin returning
     // Update the height of the current root
     root->_height = 1 + max(getHeight(root->_left), getHeight(root->_right));
 
-    // Here is where the real magic happens!
-    // We balance the tree from bottom up
+    // Balance tree from bottom up
     // Calculate the balance factor for the current node
     int balanceFact = getBalance(root);
 
-    /********** 4 cases where the AVL becomes unbalanced at the current root **********/
-    // Depending on whether a rotation operation was performed, this part of the code returns the correct root
+    /********** 4 Scenarios for tree imbalance *********/
+    // Left heavy
+    if(balanceFact > 1){
+        if(getBalance(root->_left) >= 0){ // Left-Left
+            return rightRotate(root);
+        }
 
-    // Left-Left Case(balance factor > 1)
-    // Root->left becomes new root
-    if(balanceFact > 1 && student._id < root->_left->_student._id){
-        return rightRotate(root);
+        else{ // Left-Right
+            root->_left = leftRotate(root->_left);
+            return rightRotate(root);
+        }
     }
 
-    // Right-Right Case(balance factor < -1)
-    // Root->right becomes the new root
-    if(balanceFact < -1 && student._id > root->_right->_student._id){
-        return leftRotate(root);
+    // Right heavy
+    if(balanceFact < -1){
+        if(getBalance(root->_right) <= 0){ // Right-Right
+            return leftRotate(root);
+        }
+
+        else{ // Right-Left
+            root->_right = rightRotate(root->_right);
+            return leftRotate(root);
+        }
     }
 
-    // Left-Right Case(balance factor > 1)
-    // First perform a left rotation on root->left
-    // Then perform a right rotation on root
-    if(balanceFact > 1 && student._id > root->_left->_student._id){
-        root->_left = leftRotate(root->_left);
-        return rightRotate(root);
-    }
-
-    // Right-Left Case(balance factor < -1)
-    // First perform a right rotation on root->right
-    // Then perform a left rotation on root
-    if(balanceFact < -1 && student._id < root->_right->_student._id){
-        root->_right = rightRotate(root->_right);
-        return leftRotate(root);
-    }
-
-    // Balance factor is between -1 and 1
-    // No need to rotate and reassign root
     return root;
 }
 
@@ -201,6 +193,7 @@ bool AVL::insertStudent(const Student& student) {
         return false;
     }
 
+    // Validate Name
     if(!isValidName(student._name)){
         return false; // Invalid Name
     }
@@ -215,7 +208,7 @@ bool AVL::insertStudent(const Student& student) {
 }
 
 bool AVL::removeStudent(string id) {
-    if(!_root){ // We don't have an actual tree, so there is nothing to remove
+    if(!_root){ // Nothing to remove
         return false;
     }
 
@@ -266,27 +259,33 @@ void AVL::printInOrder(Node* root, stringstream& ss) {
     printInOrder(root->_right, ss);
 }
 
-void AVL::printPreOrder(Node* root, std::stringstream& ss) {
-    if(!root){
+void AVL::printPreOrder(Node* root, stringstream& ss) {
+    if (!root) {
         return;
     }
 
     root->printName(ss);
 
-    if (root->_left || root->_right) { // Check if there are children before adding a comma
+    bool hasLeft = root->_left != nullptr;
+    bool hasRight = root->_right != nullptr;
+
+    if (hasLeft || hasRight) {
         ss << ", ";
     }
 
-    printPreOrder(root->_left, ss);
-
-    if (root->_right) { // Check if there are children before adding a comma
-        ss << ", ";
+    if (hasLeft) {
+        printPreOrder(root->_left, ss);
+        if (hasRight) {
+            ss << ", ";
+        }
     }
 
-    printPreOrder(root->_right, ss);
+    if (hasRight) {
+        printPreOrder(root->_right, ss);
+    }
 }
 
-void AVL::printPostOrder(Node* root, std::stringstream& ss) {
+void AVL::printPostOrder(Node* root, stringstream& ss) {
     if(!root){
         return;
     }
@@ -349,8 +348,8 @@ void AVL::printLevelCount() {
     cout << _root->_height << endl;
 }
 
-int AVL::getHeight(Node* N) {
-   return N ? N->_height : 0;
+int AVL::getHeight(Node* node) {
+   return node ? node->_height : 0;
 }
 
 Node* AVL::getRoot() const{
@@ -358,10 +357,6 @@ Node* AVL::getRoot() const{
         return nullptr;
     }
     return _root;
-}
-
-int AVL::max(int a, int b) {
-    return (a > b) ? a : b;
 }
 
 bool AVL::searchID(Node* root, string id){

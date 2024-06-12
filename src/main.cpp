@@ -48,19 +48,17 @@ void processCommand(AVL& tree, const string& command){
     vector<string> tokens = splitCommand(command);
 
     if(tokens.empty()){
-        cerr << "Empty command\n";
         return;
     }
 
     if(tokens[0] == "insert"){
         if(tokens.size() != 3){
-            cerr << "Invalid insert command\n";
+            cout << "unsuccessful\n";
             return;
         }
 
         string name = tokens[1];
         name = name.substr(1, name.size() - 2); // Remove double quotes
-
         string id = tokens[2];
 
         Student student(name, id);
@@ -68,7 +66,7 @@ void processCommand(AVL& tree, const string& command){
             cout << "successful\n";
         }
         else {
-            cerr << "unsuccessful\n";
+            cout << "unsuccessful\n";
         }
     }
 
@@ -77,16 +75,15 @@ void processCommand(AVL& tree, const string& command){
         if(tree.removeStudent(id)){
             cout << "successful\n";
         }
-
         else {
-            cerr << "unsuccessful\n";
+            cout << "unsuccessful\n";
         }
 
     }
 
     else if(tokens[0] == "removeInorder"){
         if(tokens.size() < 2 || !all_of(tokens[1].begin(), tokens[1].end(), ::isdigit)){
-            cerr << "unsuccessful\n";
+            cout << "unsuccessful\n";
             return;
         }
         else{
@@ -126,25 +123,28 @@ void processCommand(AVL& tree, const string& command){
         }
 
         string str = tokens[1];
-        string str1 = str;
-        string str2 = str.substr(1, str.size() - 2); // Remove double quotes
-        vector<string> v;
-        if(tree.testIsValidID(str) && tree.searchID(tree.getRoot(), str1)){ // We search for ID
+        string& id = str;
+        string name = str.substr(1, str.size() - 2); // Remove double quotes for name search
+
+        if(tree.testIsValidID(id) && tree.searchID(tree.getRoot(), id)){ // We search for ID
         }
 
-
-        else if(tree.testIsValidName(str2)){
-            tree.searchName(tree.getRoot(), str2, v);
-            if(v.size() > 0){
+        else if(tree.testIsValidName(name)){
+            vector<string> v;
+            tree.searchName(tree.getRoot(), name, v);
+            if(!v.empty()){
                 for(auto& id : v){
                     cout << id << endl;
                 }
+            }
+
+            else{
+                cout << "unsuccessful\n";
             }
         }
 
         else{
             cout << "unsuccessful\n";
         }
-
     }
 }

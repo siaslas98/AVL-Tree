@@ -5,9 +5,6 @@
 #include <string>
 #include <regex>
 
-// Debug print to track function calls
-#define DEBUG_PRINT(x) cout << x << endl
-
 using namespace std;
 
 struct Student {
@@ -23,18 +20,18 @@ struct Node {
     int _height;
 
     Node(const Student& student)
-            : _student(student), _left(nullptr), _right(nullptr), _height(1) {}
+            : _student(student), _left(nullptr), _right(nullptr), _height(1) {} // 1-Based Height Tree Representation
 
-    bool searchSubtree(Node* subtree, string id){
-        if(subtree == nullptr){
+    bool searchSubtree(Node* root, string id){
+        if(root == nullptr){
             return false;
         }
 
-        if(subtree->_student._id == id){
+        if(root->_student._id == id){
             return true;
         }
 
-        return searchSubtree(subtree->_left, id) || searchSubtree(subtree->_right, id);
+        return searchSubtree(root->_left, id) || searchSubtree(root->_right, id);
     }
     void printName(stringstream& ss){
         ss << _student._name;
@@ -45,7 +42,7 @@ class AVL {
 private:
     Node* _root;
 
-    int getBalance(Node* N);
+    int getBalance(Node* node);
     Node* leftRotate(Node* root);
     Node* rightRotate(Node* root);
     Node* getIoSuccessor(Node* root);
@@ -91,20 +88,20 @@ public:
     bool testInsert(const Student& student){
         _root = insert(_root, student);
         return _root != nullptr;
-    }
+    } // This test is for the private insert
     bool isBalanced(Node* root) {
-        if (!root) {
+        if (!root) { // An empty tree is always balanced
             return true;
-        } // An empty tree is always balanced
+        }
         int balance = getBalance(root);
         bool leftBalanced = isBalanced(root->_left);
         bool rightBalanced = isBalanced(root->_right);
         return balance >= -1 && balance <= 1 && leftBalanced && rightBalanced;
     }
     bool isHeightCorrect(Node* root){
-        if(!root){
+        if(!root){ // An empty tree has a height of 0
             return true;
-        } // An empty tree has a height of 0
+        }
         int leftHeight = getHeight(root->_left);
         int rightHeight = getHeight(root->_right);
         bool leftHeightCorrect = isHeightCorrect(root->_left);
@@ -125,9 +122,8 @@ public:
     }
 
     // Helpers
-    int getHeight(Node* N);
+    int getHeight(Node* node);
     Node* getRoot() const;
-    int max(int a, int b);
 };
 
 
